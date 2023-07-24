@@ -18,11 +18,12 @@ config = {
 
 firebase = pyrebase.initialize_app(config)
 auth = firebase.auth()
+db = firebase.database()
 
 @app.route('/', methods=['GET', 'POST'])
 def signin():
     error = ""
-    if request.method == 'GET':
+    if request.method == 'POST':
         email = request.form["Email"]
         password = request.form["Password"]
         try:
@@ -37,11 +38,17 @@ def signin():
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     error = ""
-    if request.method == 'GET':
+    if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
+        full_name = request.form['full_name']
+        username = request.form['username']
+        bio = request.form['bio']
         try:
             login_session['user'] = auth.create_user_with_email_and_password(email, password)
+            UID = login_session['user']['localId']
+            user = {'email': email, 'password': password, 'name': full_name, 'username': username, 'bio': bio}
+            db.child('Users').child(UID).set(user)
             return redirect(url_for('add_tweet'))
         except:
             error = "failed to signup"
@@ -49,8 +56,23 @@ def signup():
 
 @app.route('/add_tweet', methods=['GET', 'POST'])
 def add_tweet():
+    error = ""
+    if request.method == 'POST':
+        Title = request.form['Title']
+        Text = request.form['Text']
+        try:
+            UID = login_session['user']['localId']
+            tweet = {'Title': Title, 'Text': Text, 'UID': UID}
+            db.child('Tweets').push(tweet)
+            return redirect(url_for('all_tweets'))
+        except:
+            error = 'failed to tweet'
     return render_template("add_tweet.html")
 
+@app.route('/all_tweets')
+def all_tweets():
+    tweets = db.child('Tweets').get().val()
+    return render_template("tweets.html", tweets = tweets)
 
 if __name__ == '__main__':
     app.run(debug=True)

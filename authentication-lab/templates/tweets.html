@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>All tweets</title>
+</head>
+<body>
+    
+       <center>
+           
+    <ul>
+        <h1>All Tweets</h1>
+        {% for tweet_id, tweet in tweets.items() %}
+        <li>
+            <h2>{{ tweet['Title'] }}</h2>
+            <p>{{ tweet['Text'] }}</p>
+            <p>By User UID: {{ tweet['UID'] }}</p>
+        </li>
+        {% endfor %}
+    </ul>
+       </center>
+
+
+</body>
